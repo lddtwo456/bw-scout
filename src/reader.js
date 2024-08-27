@@ -6,6 +6,11 @@ class LogReader {
     this.folder_path = folder_path;
     this.file_path = null;
     this.previous_size = 0;
+
+    // used when main run loop checks for new players, servers, etc
+    this.new_server = false;
+    this.new_players = [];
+    this.removed_players = [];
   }
 
   // initiates log file path
@@ -27,12 +32,71 @@ class LogReader {
 
         stream.on('data', (chunk) => {
           lines = chunk.split('\n');
-          console.log(lines);
+          
+          for (const line of lines) {
+            //console.log(line);
+            this.processLine(line);
+          }
         })
 
         this.previous_size = curr.size;
       }
     });
+  }
+
+  // processes lines (I don't like nesting)
+  processLine(line) {
+    if (line) {
+      // if loggesd event is a chat event
+      if (line.substring(67, 73) == '[CHAT]') {
+        // check if sent to new mini
+        if (line.substring(74, 93) == 'Sending you to mini') {
+          console.log('sent to mini server');
+          // queue removed players and clear new players
+          this.removed_players = this.newPlayers();
+        }
+
+        // check if message is sent by a player or is in a main lobby
+        else {
+          let i = 75;
+          let shouldbreak = false;
+          while (i < line.length && !shouldbreak) {
+            switch (line[i]) {
+              case '[': // isn't in a mini or is a message sent by a player
+                return;
+              case ':': // is a message sent by a player
+                return;
+              case ' ': // past name
+                shouldbreak = true;
+                break;
+            }
+            i++;
+          }
+
+          // check if message is someone joining or leaving
+          if (line.substring(i, i+9) == 'has quit!') {
+            let player_name = line.substring(74, i-1);
+            this.removed_players.push(player_name);
+          }
+          if (line.substring(i, i+12) == 'has joined (') {
+            let player_name = line.substring(74, i-1);
+            this.new_players.push(player_name);
+          }
+        }
+      }
+    }
+  }
+
+  newPlayers() {
+    players = this.new_players;
+    this.new_players = [];
+    return players;
+  }
+
+  removedPlayers() {
+    players = this.removed_players;
+    this.removed_players = [];
+    return players;
   }
 
   sleep(ms) {
