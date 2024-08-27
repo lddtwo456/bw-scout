@@ -24,6 +24,11 @@ app.whenReady().then(async () => {
   // search for latest log file and attach a LogReader
   const log_reader = new LogReader(logs_path);
   await log_reader.init();
+
+  // setup and do loop
+  while (true) {
+
+  }
 });
 
 app.on('window-all-closed', () => {

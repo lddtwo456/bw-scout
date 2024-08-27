@@ -76,15 +76,23 @@ class LogReader {
           // check if message is someone joining or leaving
           if (line.substring(i, i+9) == 'has quit!') {
             let player_name = line.substring(74, i-1);
-            this.removed_players.push(player_name);
+            this.removePlayer(player_name);
           }
           if (line.substring(i, i+12) == 'has joined (') {
             let player_name = line.substring(74, i-1);
-            this.new_players.push(player_name);
+            this.addPlayer(player_name);
           }
         }
       }
     }
+  }
+
+  addPlayer(player_name) {
+    this.new_players.push(player_name);
+  }
+
+  removePlayer(player_name) {
+    this.removed_players.push(player_name);
   }
 
   newPlayers() {
