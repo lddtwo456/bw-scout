@@ -1,0 +1,32 @@
+{
+  "name": "bw-scout",
+  "version": "1.0.0",
+  "description": "bedwars overlay",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "keywords": [
+    "(comma-separated)",
+    "electron",
+    "desktop",
+    "app",
+    "nodejs",
+    "javascript",
+    "bedwars",
+    "overlay"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lddtwo456/bw-scout/issues"
+  },
+  "homepage": "https://github.com/lddtwo456/bw-scout#readme",
+  "devDependencies": {
+    "electron": "^32.0.1"
+  },
+  "dependencies": {
+    "bw-scout": "file:"
+  }
+}
