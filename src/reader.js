@@ -16,6 +16,7 @@ class LogReader {
 
   // starts reading log file
   startReading() {
+    let lines = [];
     fs.watchFile(this.file_path, (curr, prev) => {
       if (curr.size > this.previous_size) {
         const stream = fs.createReadStream(this.file_path, {
@@ -25,7 +26,8 @@ class LogReader {
         });
 
         stream.on('data', (chunk) => {
-          console.log(chunk)
+          lines = chunk.split('\n');
+          console.log(lines);
         })
 
         this.previous_size = curr.size;
