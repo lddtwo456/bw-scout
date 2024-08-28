@@ -2,6 +2,7 @@ const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const os = require('os');
 const LogReader = require('./reader');
+const playerScout = require('./playerScout')
 
 function makeWindow() {
   const win = new BrowserWindow({
@@ -25,10 +26,10 @@ app.whenReady().then(async () => {
   const log_reader = new LogReader(logs_path);
   await log_reader.init();
 
-  // setup and do loop
-  while (true) {
-
-  }
+  // set up player scout
+  playerScout.onPlayerAdded(() => {
+    ;
+  })
 });
 
 app.on('window-all-closed', () => {

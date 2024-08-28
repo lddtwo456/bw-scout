@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const playerScout = require('./playerScout')
 
 class LogReader {
   constructor(folder_path) {
@@ -21,6 +22,7 @@ class LogReader {
 
   // starts reading log file
   startReading() {
+    let first_read = true;
     let lines = [];
     fs.watchFile(this.file_path, (curr, prev) => {
       if (curr.size > this.previous_size) {
@@ -31,11 +33,14 @@ class LogReader {
         });
 
         stream.on('data', (chunk) => {
-          lines = chunk.split('\n');
+          if (!first_read) {
+            lines = chunk.split('\n');
           
-          for (const line of lines) {
-            //console.log(line);
-            this.processLine(line);
+            for (const line of lines) {
+              this.processLine(line);
+            }
+          } else {
+            first_read = false;
           }
         })
 
@@ -52,8 +57,6 @@ class LogReader {
         // check if sent to new mini
         if (line.substring(74, 93) == 'Sending you to mini') {
           console.log('sent to mini server');
-          // queue removed players and clear new players
-          this.removed_players = this.newPlayers();
         }
 
         // check if message is sent by a player or is in a main lobby
@@ -80,6 +83,7 @@ class LogReader {
           }
           if (line.substring(i, i+12) == 'has joined (') {
             let player_name = line.substring(74, i-1);
+            console.log("adding player "+player_name);
             this.addPlayer(player_name);
           }
         }
@@ -88,23 +92,11 @@ class LogReader {
   }
 
   addPlayer(player_name) {
-    this.new_players.push(player_name);
+    playerScout.addPlayer(player_name);
   }
 
   removePlayer(player_name) {
     this.removed_players.push(player_name);
-  }
-
-  newPlayers() {
-    players = this.new_players;
-    this.new_players = [];
-    return players;
-  }
-
-  removedPlayers() {
-    players = this.removed_players;
-    this.removed_players = [];
-    return players;
   }
 
   sleep(ms) {
