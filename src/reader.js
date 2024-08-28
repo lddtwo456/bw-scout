@@ -22,7 +22,11 @@ class LogReader {
 
   // starts reading log file
   startReading() {
-    let first_read = true;
+    fs.writeFile(this.file_path, '', (err) => {
+      if (err) throw err;
+      console.log('log cleared');
+    })
+
     let lines = [];
     fs.watchFile(this.file_path, (curr, prev) => {
       if (curr.size > this.previous_size) {
@@ -33,14 +37,10 @@ class LogReader {
         });
 
         stream.on('data', (chunk) => {
-          if (!first_read) {
-            lines = chunk.split('\n');
+          lines = chunk.split('\n');
           
-            for (const line of lines) {
-              this.processLine(line);
-            }
-          } else {
-            first_read = false;
+          for (const line of lines) {
+            this.processLine(line);
           }
         })
 
@@ -83,6 +83,7 @@ class LogReader {
           }
           if (line.substring(i, i+12) == 'has joined (') {
             let player_name = line.substring(74, i-1);
+            console.log(line);
             console.log("adding player "+player_name);
             this.addPlayer(player_name);
           }
