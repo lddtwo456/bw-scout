@@ -54,50 +54,19 @@ class LogReader {
       if (line.substring(67, 73) === '[CHAT]') {
         // check if sent to new mini
         if (line.substring(74, 93) === 'Sending you to mini') {
-          this.in_pregame = true;
+          this.in_game = true;
           console.log('sent to mini server');
-        } else if (this.in_pregame) { // check for if you just left a pregame
-          let i = 74;
-          let shouldbreak = false;
-          let hasrank = false;
-          let grossmvppp = false; // mvp++ like to have annoying formatting so I'm being inclusive
-
-          if (line.substring(74, 76) == ' o') {
-            grossmvppp = true;
-            i++; // increment becase for some reason they start with a space
-          }
-
-          //console.log('searching for left');
-          while (i < line.length && !shouldbreak) {
-            switch (line[i]) {
-              case '[': // if player has a rank, you need to skip one space
-                //console.log('hasrank')
-                hasrank = true;
-                break;
-              case ' ':
-                if (hasrank) { // skipping space for rank
-                  //console.log('pastrank')
-                  hasrank = false;
-                } else if (grossmvppp) {
-                  //console.log('pastdumformatting');
-                  grossmvppp = false;
-                } else { // made it past name
-                  //console.log('found end');
-                  shouldbreak = true;
-                }
-                break;
-            }
-
-            i++;
-          }
-          
-          //console.log(line);
-          //console.log(line.substring(i+4, i+21));
-          if (line.substring(i+4, i+21) === 'joined the lobby!') {
-            this.in_pregame = false;
+        } 
+        else if (this.in_game) { // check for if you just left a game
+          // lines only have color formatting in lobbies for some reason
+          let first2 = line.substring(74, 76);
+          if (first2 == 'o?' || first2 == ' o') {
+            this.in_game = false;
             console.log('left mini');
           }
         }
+
+        m
 
 
         /*
