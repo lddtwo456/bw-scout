@@ -8,10 +8,8 @@ class LogReader {
     this.file_path = null;
     this.previous_size = 0;
 
-    // used when main run loop checks for new players, servers, etc
-    this.new_server = false;
-    this.new_players = [];
-    this.removed_players = [];
+    // keeps if you are in a pregame lobby thus if you should be processing chat messages for names
+    this.in_pregame = false;
   }
 
   // initiates log file path
@@ -58,14 +56,17 @@ class LogReader {
         if (line.substring(74, 93) == 'Sending you to mini') {
           console.log('sent to mini server');
         }
+        // check if /who usage
+        else if (line.substring(74, 82) == 'ONLINE: ') {
+          this.processWho(line);
+        }
 
-        // check if message is sent by a player or is in a main lobby
         else {
           let i = 75;
           let shouldbreak = false;
           while (i < line.length && !shouldbreak) {
             switch (line[i]) {
-              case '[': // isn't in a mini or is a message sent by a player
+              case '[': // is a message sent by a player
                 return;
               case ':': // is a message sent by a player
                 return;
@@ -80,15 +81,37 @@ class LogReader {
           if (line.substring(i, i+9) == 'has quit!') {
             let player_name = line.substring(74, i-1);
             this.removePlayer(player_name);
-          }
-          if (line.substring(i, i+12) == 'has joined (') {
+          } 
+          else if (line.substring(i, i+12) == 'has joined (') {
+            // tell reader to check for names sending chats
+            this.in_pregame = true;
+
             let player_name = line.substring(74, i-1);
             console.log(line);
-            console.log("adding player "+player_name);
+            // console.log("adding player "+player_name);
+            console.log('cant currently scout players before match starts because of horrible bw update ;(');
             this.addPlayer(player_name);
           }
         }
       }
+    }
+  }
+
+  // process /who usages
+  processWho(line) {
+    let i = 82;
+    let name = '';
+    while (i < line.length) {
+      if (line[i] == ',') {
+        this.addPlayer(name);
+        name = '';
+      } else if (line[i] == ' ') {
+        name = '';
+      } else {
+        name += line[i];
+      }
+
+      i++;
     }
   }
 
@@ -97,7 +120,7 @@ class LogReader {
   }
 
   removePlayer(player_name) {
-    this.removed_players.push(player_name);
+    playerScout.removePlayer(player_name);
   }
 
   sleep(ms) {

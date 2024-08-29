@@ -4,14 +4,28 @@ const fs = require('fs').promises;
 class playerScout {
   static players = [];
   static playerAddedListeners = [];
+  static playerRemovedListeners = [];
 
   static addPlayer(name) {
     playerScout.players.push(new player(name));
     playerScout.playerAddedListeners.forEach(listener => listener(name))
   }
 
+  static removePlayer(name) {
+    playerScout.players = playerScout.players.filter(item => item.name != name);
+    playerScout.playerRemovedListeners.forEach(listener => listener(name))
+  }
+
+  static getPlayerData(name) {
+    return playerScout.players.find(person => person.name === name);
+  }
+
   static onPlayerAdded(fnc) {
-    playerScout.playerAddedListeners.push(fnc)
+    playerScout.playerAddedListeners.push(fnc);
+  }
+
+  static onPlayerRemoved(fnc) {
+    playerScout.playerRemovedListeners.push(fnc);
   }
 }
 
@@ -51,7 +65,9 @@ class player {
   async init() {
     // get player's UUID for hypixel api from mojang api
     //console.log('getting uuid of '+this.name);
-    this.uuid = await this.getUUID();
+    if (!this.uuid) {
+      this.uuid = await this.getUUID();
+    }
 
     //console.log('uuid='+this.uuid);
 
@@ -82,7 +98,7 @@ class player {
     this.bblr = this.beds_broken/this.beds_lost;
 
     this.exp = stats.experience;
-    this.level = floor(this.exp/5000);
+    this.level = Math.floor(this.exp/5000);
 
     try {
       this.winstreak = stats.winstreak;
