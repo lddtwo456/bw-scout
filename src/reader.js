@@ -8,8 +8,9 @@ class LogReader {
     this.file_path = null;
     this.previous_size = 0;
 
-    // keeps if you are in a pregame lobby thus if you should be processing chat messages for names
+    // runtime state
     this.in_pregame = false;
+    this.checked_who = false;
   }
 
   // initiates log file path
@@ -55,59 +56,35 @@ class LogReader {
         // check if sent to new mini
         if (line.substring(74, 93) === 'Sending you to mini') {
           this.in_game = true;
+          this.removeAll();
           console.log('sent to mini server');
         } 
-        else if (this.in_game) { // check for if you just left a game
+        else if (this.in_game) {
+          // checking first to see if you left the pregame lobby
           // lines only have color formatting in lobbies for some reason
           let first2 = line.substring(74, 76);
           if (first2 == 'o?' || first2 == ' o') {
             this.in_game = false;
+            this.removeAll();
             console.log('left mini');
+            return; // exit function
           }
-        }
 
-        m
-
-
-        /*
-        // check if /who usage
-        if (line.substring(74, 82) === 'ONLINE: ') {
-          this.processWho(line);
-        }
-
-        else {
-          let i = 75;
-          let shouldbreak = false;
-          while (i < line.length && !shouldbreak) {
-            switch (line[i]) {
-              case '[': // is a message sent by a player
-                return;
-              case ':': // is a message sent by a player
-                return;
-              case ' ': // past name
-                shouldbreak = true;
-                break;
+          // check for /who but only if /who hasn't been checked yet
+          if (!this.checked_who) {
+            // separated if statements mean I'm not calling string.substring() unnecessarily
+            if (line.substring(74, 82) === 'ONLINE: ') {
+              this.processWho(line);
             }
-            i++;
           }
 
-          // check if message is someone joining or leaving
-          if (line.substring(i, i+9) === 'has quit!') {
-            let player_name = line.substring(74, i-1);
-            this.removePlayer(player_name);
-          } 
-          else if (line.substring(i, i+12) === 'has joined (') {
-            // tell reader to check for names sending chats
-            this.in_pregame = true;
-
-            let player_name = line.substring(74, i-1);
-            console.log(line);
-            // console.log("adding player "+player_name);
-            console.log('cant currently scout players before match starts because of horrible bw update ;(');
-            this.addPlayer(player_name);
+          // check for players who are final killed but only after player data has been fetched
+          if (this.checked_who) {
+            if (line.endsWith('FINAL KILL!')) {
+              this.removePlayer(line.substring(74, line.length).split(' ')[0]);
+            }
           }
         }
-        */
       }
     }
   }
@@ -128,6 +105,7 @@ class LogReader {
 
       i++;
     }
+    this.addPlayer(name);
   }
 
   addPlayer(player_name) {
@@ -136,6 +114,10 @@ class LogReader {
 
   removePlayer(player_name) {
     playerScout.removePlayer(player_name);
+  }
+
+  removeAll() {
+    playerScout.removeAll();
   }
 
   sleep(ms) {

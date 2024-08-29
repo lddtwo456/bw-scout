@@ -5,15 +5,21 @@ class playerScout {
   static players = [];
   static playerAddedListeners = [];
   static playerRemovedListeners = [];
+  static playersResetListeners = [];
 
   static addPlayer(name) {
     playerScout.players.push(new player(name));
-    playerScout.playerAddedListeners.forEach(listener => listener(name))
+    playerScout.playerAddedListeners.forEach(listener => listener(name));
   }
 
   static removePlayer(name) {
     playerScout.players = playerScout.players.filter(item => item.name != name);
-    playerScout.playerRemovedListeners.forEach(listener => listener(name))
+    playerScout.playerRemovedListeners.forEach(listener => listener(name));
+  }
+
+  static removeAll() {
+    playerScout.players = [];
+    playerScout.playersResetListeners.forEach(listener => listener());
   }
 
   static getPlayerData(name) {
@@ -26,6 +32,10 @@ class playerScout {
 
   static onPlayerRemoved(fnc) {
     playerScout.playerRemovedListeners.push(fnc);
+  }
+
+  static onPlayersReset(fnc) {
+    playerScout.playersResetListeners.push(fnc);
   }
 }
 

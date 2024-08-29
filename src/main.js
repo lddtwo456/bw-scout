@@ -27,8 +27,14 @@ app.whenReady().then(async () => {
   await log_reader.init();
 
   // set up player scout
-  playerScout.onPlayerAdded(() => {
-    ;
+  playerScout.onPlayerAdded((name) => {
+    console.log('added player '+name);
+  })
+  playerScout.onPlayerRemoved((name) => {
+    console.log('removed player '+name)
+  })
+  playerScout.onPlayersReset(() => {
+    console.log('players reset');
   })
 });
 
