@@ -24,38 +24,78 @@ class player {
     this.key = null;
 
     // player stats
-    this.finals = 0;
-    this.final_deaths = 0;
+    this.finals = null;
+    this.final_deaths = null;
+    this.fkdr = null;
+
+    this.wins = null;
+    this.losses = null;
+    this.wlr = null;
+
+    this.beds_broken = null;
+    this.beds_lost = null;
+    this.bblr = null;
+
+    this.exp = null;
+    this.star = null;
+
+    this.winstreak = null;
 
     // tells the gui if the stats have been updated yet to be displayed
     this.updated = false;
 
-    console.log('initializing player '+name)
+    //console.log('initializing player '+name)
     this.init();
   }
 
   async init() {
     // get player's UUID for hypixel api from mojang api
-    console.log('getting uuid of '+this.name);
+    //console.log('getting uuid of '+this.name);
     this.uuid = await this.getUUID();
 
-    console.log('uuid='+this.uuid);
+    //console.log('uuid='+this.uuid);
 
     // get api key from apikey.txt (in .gitignore, get your own)
-    console.log('getting api key');
+    //console.log('getting api key');
     try {
       const data = await fs.readFile('./src/apikey.txt', 'utf8');
       this.key = data.trim();
     } catch (err) {
       console.error('Error reading API key:', err);
     }
-    console.log('apikey='+this.key);
+    //console.log('apikey='+this.key);
 
     // get bedwars stats
     console.log('getting stats of player '+this.name)
     const stats = await this.getStats();
 
-    console.log(stats);
+    this.finals = stats.final_kills_bedwars;
+    this.final_deaths = stats.final_deaths_bedwars;
+    this.fkdr = this.finals/this.final_deaths;
+    
+    this.wins = stats.wins_bedwars;
+    this.losses = stats.losses_bedwars;
+    this.wlr = this.wins/this.losses;
+
+    this.beds_broken = stats.beds_broken_bedwars;
+    this.beds_lost = stats.beds_lost_bedwars;
+    this.bblr = this.beds_broken/this.beds_lost;
+
+    this.exp = stats.experience;
+    this.level = floor(this.exp/5000);
+
+    try {
+      this.winstreak = stats.winstreak;
+    } catch (err) {
+      console.error('error fetching winstreak: '+err);
+    }
+
+    console.log('\n'+this.name+'\n');
+    console.log('fkdr: '+this.fkdr);
+    console.log('wlr: '+this.wlr);
+    console.log('bblr: '+this.bblr);
+    console.log('star: '+this.star);
+    console.log('winstreak: '+this.winstreak);
   }
 
   async getStats() {
