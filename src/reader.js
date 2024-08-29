@@ -31,7 +31,7 @@ class LogReader {
         const stream = fs.createReadStream(this.file_path, {
           start: this.previous_size,
           end: curr.size,
-          encoding: 'utf8',
+          encoding: 'ascii',
         });
 
         stream.on('data', (chunk) => {
@@ -50,14 +50,59 @@ class LogReader {
   // processes lines (I don't like nesting)
   processLine(line) {
     if (line) {
-      // if loggesd event is a chat event
-      if (line.substring(67, 73) == '[CHAT]') {
+      // if logged event is a chat event
+      if (line.substring(67, 73) === '[CHAT]') {
         // check if sent to new mini
-        if (line.substring(74, 93) == 'Sending you to mini') {
+        if (line.substring(74, 93) === 'Sending you to mini') {
+          this.in_pregame = true;
           console.log('sent to mini server');
+        } else if (this.in_pregame) { // check for if you just left a pregame
+          let i = 74;
+          let shouldbreak = false;
+          let hasrank = false;
+          let grossmvppp = false; // mvp++ like to have annoying formatting so I'm being inclusive
+
+          if (line.substring(74, 76) == ' o') {
+            grossmvppp = true;
+            i++; // increment becase for some reason they start with a space
+          }
+
+          //console.log('searching for left');
+          while (i < line.length && !shouldbreak) {
+            switch (line[i]) {
+              case '[': // if player has a rank, you need to skip one space
+                //console.log('hasrank')
+                hasrank = true;
+                break;
+              case ' ':
+                if (hasrank) { // skipping space for rank
+                  //console.log('pastrank')
+                  hasrank = false;
+                } else if (grossmvppp) {
+                  //console.log('pastdumformatting');
+                  grossmvppp = false;
+                } else { // made it past name
+                  //console.log('found end');
+                  shouldbreak = true;
+                }
+                break;
+            }
+
+            i++;
+          }
+          
+          //console.log(line);
+          //console.log(line.substring(i+4, i+21));
+          if (line.substring(i+4, i+21) === 'joined the lobby!') {
+            this.in_pregame = false;
+            console.log('left mini');
+          }
         }
+
+
+        /*
         // check if /who usage
-        else if (line.substring(74, 82) == 'ONLINE: ') {
+        if (line.substring(74, 82) === 'ONLINE: ') {
           this.processWho(line);
         }
 
@@ -78,11 +123,11 @@ class LogReader {
           }
 
           // check if message is someone joining or leaving
-          if (line.substring(i, i+9) == 'has quit!') {
+          if (line.substring(i, i+9) === 'has quit!') {
             let player_name = line.substring(74, i-1);
             this.removePlayer(player_name);
           } 
-          else if (line.substring(i, i+12) == 'has joined (') {
+          else if (line.substring(i, i+12) === 'has joined (') {
             // tell reader to check for names sending chats
             this.in_pregame = true;
 
@@ -93,6 +138,7 @@ class LogReader {
             this.addPlayer(player_name);
           }
         }
+        */
       }
     }
   }
